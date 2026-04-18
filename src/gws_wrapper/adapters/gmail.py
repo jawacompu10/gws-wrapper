@@ -71,6 +71,24 @@ def trash_message(message_id: str) -> Any:
         }
     )
 
+def archive_message(message_id: str) -> Any:
+    """
+    Archive a message by removing the 'INBOX' label.
+    """
+    return run_gws_command(
+        service="gmail",
+        resource="users",
+        sub_resource="messages",
+        method="modify",
+        params={
+            "userId": "me",
+            "id": message_id
+        },
+        body={
+            "removeLabelIds": ["INBOX"]
+        }
+    )
+
 def _fetch_metadata_for_messages(messages_list: List[Dict[str, Any]]) -> List[GmailMessage]:
     """
     Helper to fetch metadata for a list of message objects containing IDs.

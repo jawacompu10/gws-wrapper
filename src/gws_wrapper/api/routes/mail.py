@@ -36,3 +36,12 @@ async def trash_messages(request: TrashRequest):
         return {"status": "success", "count": len(request.message_ids)}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/archive")
+async def archive_messages(request: TrashRequest):
+    try:
+        for mid in request.message_ids:
+            gmail.archive_message(mid)
+        return {"status": "success", "count": len(request.message_ids)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

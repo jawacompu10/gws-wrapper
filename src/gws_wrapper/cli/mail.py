@@ -102,3 +102,16 @@ def trash(message_ids):
     except Exception as e:
         logger.error(f"Failed to trash message(s): {e}")
         raise click.ClickException(str(e))
+
+@mail.command(name="archive")
+@click.argument("message_ids", nargs=-1, required=True)
+def archive(message_ids):
+    """Archive one or more messages (removes from Inbox)."""
+    logger.info(f"Archiving {len(message_ids)} messages...")
+    try:
+        for mid in message_ids:
+            gmail.archive_message(mid)
+            click.echo(f"Successfully archived message {mid}.")
+    except Exception as e:
+        logger.error(f"Failed to archive message(s): {e}")
+        raise click.ClickException(str(e))

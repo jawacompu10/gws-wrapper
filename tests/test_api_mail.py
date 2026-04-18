@@ -40,3 +40,11 @@ def test_trash_messages(mocker):
     assert response.json()["count"] == 2
     assert mock_trash.call_count == 2
 
+def test_archive_messages(mocker):
+    mock_archive = mocker.patch("gws_wrapper.adapters.gmail.archive_message")
+    
+    response = client.post("/mail/archive", json={"message_ids": ["id1", "id2"]})
+    assert response.status_code == 200
+    assert response.json()["count"] == 2
+    assert mock_archive.call_count == 2
+

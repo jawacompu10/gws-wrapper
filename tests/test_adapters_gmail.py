@@ -72,6 +72,17 @@ def test_trash_message_success(mocker):
     assert args["method"] == "trash"
     assert args["params"]["id"] == "msg1"
 
+def test_archive_message_success(mocker):
+    mock_run = mocker.patch("gws_wrapper.adapters.gmail.run_gws_command")
+    mock_run.return_value = {}
+
+    gmail.archive_message("msg1")
+    
+    mock_run.assert_called_once()
+    args = mock_run.call_args[1]
+    assert args["method"] == "modify"
+    assert args["body"]["removeLabelIds"] == ["INBOX"]
+
 def test_search_messages_success(mocker):
     mock_run = mocker.patch("gws_wrapper.adapters.gmail.run_gws_command")
     mock_run.side_effect = [
