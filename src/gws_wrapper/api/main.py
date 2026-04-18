@@ -1,10 +1,11 @@
 from fastapi import FastAPI
 from loguru import logger
-from gws_wrapper.api.routes import mail
+from gws_wrapper.api.routes import mail, calendar
 
 app = FastAPI(title="gws-wrap API")
 
 app.include_router(mail.router)
+app.include_router(calendar.router)
 
 @app.get("/")
 async def root():
