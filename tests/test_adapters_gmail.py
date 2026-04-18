@@ -50,3 +50,14 @@ def test_get_message_body_success(mocker):
     body = gmail.get_message_body("msg1")
     assert body == "This is the body"
     mock_run.assert_called_once()
+
+def test_delete_message_success(mocker):
+    mock_run = mocker.patch("gws_wrapper.adapters.gmail.run_gws_command")
+    mock_run.return_value = {}
+
+    gmail.delete_message("msg1")
+    
+    mock_run.assert_called_once()
+    args = mock_run.call_args[1]
+    assert args["method"] == "delete"
+    assert args["params"]["id"] == "msg1"

@@ -51,3 +51,21 @@ def get_body(message_id):
     except Exception as e:
         logger.error(f"Failed to get message body: {e}")
         raise click.ClickException(str(e))
+
+@mail.command(name="delete")
+@click.argument("message_id")
+@click.option("--force", is_flag=True, help="Skip confirmation prompt.")
+def delete(message_id, force):
+    """Permanently delete a specific message."""
+    if not force:
+        if not click.confirm(f"Are you sure you want to PERMANENTLY delete message {message_id}?"):
+            click.echo("Deletion cancelled.")
+            return
+
+    logger.info(f"Deleting message {message_id}...")
+    try:
+        gmail.delete_message(message_id)
+        click.echo(f"Successfully deleted message {message_id}.")
+    except Exception as e:
+        logger.error(f"Failed to delete message: {e}")
+        raise click.ClickException(str(e))

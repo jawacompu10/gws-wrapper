@@ -41,6 +41,21 @@ def get_message_body(message_id: str) -> str:
 
     return extract_body(payload) or details.get("snippet", "")
 
+def delete_message(message_id: str) -> Any:
+    """
+    Permanently delete a specific message.
+    """
+    return run_gws_command(
+        service="gmail",
+        resource="users",
+        sub_resource="messages",
+        method="delete",
+        params={
+            "userId": "me",
+            "id": message_id
+        }
+    )
+
 def list_messages(count: int) -> List[GmailMessage]:
     """
     Fetch a list of messages with their metadata as Pydantic models.
