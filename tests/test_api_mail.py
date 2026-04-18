@@ -31,3 +31,19 @@ def test_get_mail_body(mocker):
     assert response.status_code == 200
     assert response.json() == {"id": "msg123", "body": "This is a test body"}
     mock_body.assert_called_once_with("msg123")
+
+def test_trash_messages(mocker):
+    mock_trash = mocker.patch("gws_wrapper.adapters.gmail.trash_message")
+    
+    response = client.post("/mail/trash", json={"message_ids": ["id1", "id2"]})
+    assert response.status_code == 200
+    assert response.json()["count"] == 2
+    assert mock_trash.call_count == 2
+
+def test_delete_message(mocker):
+    mock_delete = mocker.patch("gws_wrapper.adapters.gmail.delete_message")
+    
+    response = client.delete("/mail/msg123")
+    assert response.status_code == 200
+    assert response.json() == {"status": "success", "message": "Deleted msg123"}
+    mock_delete.assert_called_once_with("msg123")
