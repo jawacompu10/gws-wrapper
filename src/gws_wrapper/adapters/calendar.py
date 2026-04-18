@@ -42,3 +42,37 @@ def list_events(days: int) -> List[CalendarEvent]:
         ))
         
     return events
+
+def create_event(summary: str, start_time: str, end_time: str, location: str = None, description: str = None) -> CalendarEvent:
+    """
+    Create a new event in the primary calendar.
+    """
+    body = {
+        "summary": summary,
+        "start": {"dateTime": start_time},
+        "end": {"dateTime": end_time}
+    }
+    if location:
+        body["location"] = location
+    if description:
+        body["description"] = description
+
+    response = run_gws_command(
+        service="calendar",
+        resource="events",
+        method="insert",
+        params={"calendarId": "primary"},
+        body=body
+    )
+    
+    start = response.get("start", {}).get("dateTime") or response.get("start", {}).get("date")
+    end = response.get("end", {}).get("dateTime") or response.get("end", {}).get("date")
+
+    return CalendarEvent(
+        id=response["id"],
+        summary=response.get("summary", "No Title"),
+        start=start,
+        end=end,
+        location=response.get("location"),
+        description=response.get("description")
+    )

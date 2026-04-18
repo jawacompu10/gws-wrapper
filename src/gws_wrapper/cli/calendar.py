@@ -40,3 +40,44 @@ def list_events(days, json_output):
     except Exception as e:
         logger.error(f"Failed to list events: {e}")
         raise click.ClickException(str(e))
+
+@calendar_group.command(name="create")
+@click.argument("summary")
+@click.option("--start", help="Start time (ISO 8601 or natural language if gws supports it). Defaults to now.")
+@click.option("--duration", type=int, default=30, help="Duration in minutes. Defaults to 30.")
+@click.option("--location", help="Event location.")
+@click.option("--description", help="Event description.")
+def create(summary, start, duration, location, description):
+    """Create a new calendar event."""
+    from datetime import datetime, timedelta, timezone
+    from dateutil import parser
+    
+    # Parse start time
+    if start:
+        try:
+            start_dt = parser.parse(start)
+            if start_dt.tzinfo is None:
+                start_dt = start_dt.replace(tzinfo=timezone.utc)
+        except Exception as e:
+            raise click.BadParameter(f"Invalid start time: {e}")
+    else:
+        start_dt = datetime.now(timezone.utc)
+
+    end_dt = start_dt + timedelta(minutes=duration)
+    
+    logger.info(f"Creating event: {summary} at {start_dt.isoformat()} for {duration} mins...")
+    
+    try:
+        event = calendar.create_event(
+            summary=summary,
+            start_time=start_dt.isoformat(),
+            end_time=end_dt.isoformat(),
+            location=location,
+            description=description
+        )
+        click.echo(f"Successfully created event: {event.summary} (ID: {event.id})")
+        click.echo(f"Start: {event.start}")
+        click.echo(f"End:   {event.end}")
+    except Exception as e:
+        logger.error(f"Failed to create event: {e}")
+        raise click.ClickException(str(e))

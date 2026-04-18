@@ -9,6 +9,7 @@ dependencies = [
     "dynaconf>=3.2.13",
     "loguru>=0.7.3",
     "pydantic>=2.13.2",
+    "python-dateutil>=2.9.0.post0",
 ]
 
 [project.scripts]
