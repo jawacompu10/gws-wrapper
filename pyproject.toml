@@ -8,6 +8,7 @@ dependencies = [
     "click>=8.3.2",
     "dynaconf>=3.2.13",
     "loguru>=0.7.3",
+    "pydantic>=2.13.2",
 ]
 
 [project.scripts]

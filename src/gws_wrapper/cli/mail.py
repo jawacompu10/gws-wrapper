@@ -22,14 +22,15 @@ def list_messages(count, json_output):
         messages = gmail.list_messages(count)
         
         if json_output:
-            click.echo(json.dumps(messages, indent=2))
+            # Use Pydantic's serialization
+            click.echo(json.dumps([m.model_dump() for m in messages], indent=2))
         else:
             for msg in messages:
                 click.echo("-" * 40)
-                click.echo(f"From:    {msg.get('from', 'N/A')}")
-                click.echo(f"Subject: {msg.get('subject', 'N/A')}")
-                click.echo(f"Date:    {msg.get('date', 'N/A')}")
-                click.echo(f"Snippet: {msg.get('snippet', 'N/A')}")
+                click.echo(f"From:    {msg.sender or 'N/A'}")
+                click.echo(f"Subject: {msg.subject or 'N/A'}")
+                click.echo(f"Date:    {msg.date or 'N/A'}")
+                click.echo(f"Snippet: {msg.snippet or 'N/A'}")
             click.echo("-" * 40)
             
     except Exception as e:

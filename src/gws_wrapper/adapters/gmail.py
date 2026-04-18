@@ -1,5 +1,6 @@
 from typing import List, Dict, Any
 from gws_wrapper.adapters.cli import run_gws_command
+from gws_wrapper.models.gmail import GmailMessage
 
 def get_message(message_id: str, format: str = "metadata") -> Dict[str, Any]:
     """
@@ -17,11 +18,10 @@ def get_message(message_id: str, format: str = "metadata") -> Dict[str, Any]:
         }
     )
 
-def list_messages(count: int) -> List[Dict[str, Any]]:
+def list_messages(count: int) -> List[GmailMessage]:
     """
-    Fetch a list of messages with their metadata.
+    Fetch a list of messages with their metadata as Pydantic models.
     """
-    # 1. Get the list of IDs
     list_response = run_gws_command(
         service="gmail",
         resource="users",
@@ -36,23 +36,31 @@ def list_messages(count: int) -> List[Dict[str, Any]]:
     messages = list_response.get("messages", [])
     detailed_messages = []
     
-    # 2. Fetch metadata for each message
     for msg in messages:
         msg_id = msg["id"]
         details = get_message(msg_id)
         
-        # Extract headers for easier use
         headers = details.get("payload", {}).get("headers", [])
-        extracted = {
+        
+        # Build the message data
+        msg_data = {
             "id": msg_id,
+            "thread_id": details.get("threadId"),
             "snippet": details.get("snippet"),
+        }
+        
+        # Map headers to our model fields
+        header_map = {
+            "From": "sender",
+            "Subject": "subject",
+            "Date": "date"
         }
         
         for header in headers:
             name = header.get("name")
-            if name in ["From", "To", "Subject", "Date"]:
-                extracted[name.lower()] = header.get("value")
+            if name in header_map:
+                msg_data[header_map[name]] = header.get("value")
                 
-        detailed_messages.append(extracted)
+        detailed_messages.append(GmailMessage(**msg_data))
         
     return detailed_messages
