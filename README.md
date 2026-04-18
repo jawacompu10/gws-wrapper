@@ -2,12 +2,20 @@
 
 A focused, user-friendly Python wrapper around the [Google Workspace CLI (gws)](https://github.com/googleworkspace/cli). This tool provides simplified adapters for common tasks like fetching recent emails, managing calendar events, and searching/downloading files from Drive.
 
+## 🛠 Prerequisites
+
+This project is a wrapper and requires the **Google Workspace CLI** to be installed and authenticated on your system.
+
+1.  **Install gws**: Follow the instructions at [googleworkspace/cli](https://github.com/googleworkspace/cli).
+2.  **Authenticate**: Run `gws auth login` to grant access to your Google account.
+
 ## Features
 
 ### 📧 Mail (Gmail)
 - **List**: Get recent messages with metadata (From, Subject, Date).
 - **Search**: Search messages using Gmail query syntax (e.g., `from:me`, `is:unread`).
 - **Get Body**: Retrieve the full text content of a message by ID.
+- **Archive**: Remove the `INBOX` label from messages.
 - **Trash/Delete**: Safely move messages to trash or permanently delete them.
 
 ### 📅 Calendar
@@ -21,82 +29,69 @@ A focused, user-friendly Python wrapper around the [Google Workspace CLI (gws)](
 ## Tech Stack
 - **Python 3.13+**
 - **uv**: Project and dependency management.
-- **Click**: For a robust CLI interface.
-- **Pydantic**: Structured data models for all Google Workspace resources.
-- **Dynaconf**: Configuration management (settings.toml).
-- **Loguru**: Clean, structured logging.
-- **dateparser**: Flexible natural language date parsing.
+- **Click**: For the CLI interface.
+- **FastAPI**: For the REST API interface.
+- **Pydantic**: Structured data models.
+- **Dynaconf**: Configuration management.
 
 ## Installation
 
-1. Ensure you have the [gws CLI](https://github.com/googleworkspace/cli) installed and authenticated (`gws auth login`).
-2. Clone this repository.
-3. Install dependencies using uv:
-   ```bash
-   uv sync
-   ```
-
-## Usage
-
-All commands are prefixed with `uv run gws-wrap`.
-
-### Mail Examples
 ```bash
-# List 10 most recent emails
-uv run gws-wrap mail list
+git clone <repo-url>
+cd gws-wrapper
+uv sync
+```
 
-# Search for specific emails
-uv run gws-wrap mail search "from:noreply@github.com"
+## Usage (CLI)
 
-# View email body
-uv run gws-wrap mail get-body <MESSAGE_ID>
+All commands are run via `uv run gws-wrap`.
 
-# Move multiple messages to trash
+### Mail
+```bash
+uv run gws-wrap mail list --count 5
+uv run gws-wrap mail search "subject:invoice"
+uv run gws-wrap mail archive <MESSAGE_ID>
 uv run gws-wrap mail trash <ID1> <ID2>
+uv run gws-wrap mail get-body <MESSAGE_ID>
 ```
 
-### Calendar Examples
+### Calendar
 ```bash
-# List upcoming events for next 7 days
-uv run gws-wrap calendar list
-
-# Create an event with natural language
-uv run gws-wrap calendar create "Lunch with Team" --start "tomorrow 12pm" --duration 60
+uv run gws-wrap calendar list --days 14
+uv run gws-wrap calendar create "Team Sync" --start "next Monday 10am" --duration 45
 ```
 
-### Drive Examples
+### Drive
 ```bash
-# Search for a file
-uv run gws-wrap drive search "Project Proposal"
-
-# Download a file (auto-detects filename)
+uv run gws-wrap drive search "Budget"
 uv run gws-wrap drive download <FILE_ID>
 ```
 
-## API
+## Usage (API)
 
-The project also includes a FastAPI-based REST API that exposes the same functionality.
+The project includes a FastAPI-based REST API.
 
 ### Running the API
 ```bash
 uv run gws-api
 ```
-The API will be available at `http://localhost:8000`.
+Access the interactive documentation at `http://localhost:8000/docs`.
 
-### Documentation
-Once the API is running, you can access the interactive documentation at:
-- **Swagger UI**: `http://localhost:8000/docs`
-- **ReDoc**: `http://localhost:8000/redoc`
+### Key Endpoints
+| Method | Path | Description |
+| :--- | :--- | :--- |
+| `GET` | `/mail` | List or Search emails (`?q=...`, `?count=N`) |
+| `GET` | `/mail/{id}` | Get email body |
+| `POST` | `/mail/archive` | Bulk archive (`{"message_ids": [...]}`) |
+| `POST` | `/mail/trash` | Bulk move to trash |
+| `GET` | `/calendar` | List upcoming events |
+| `POST` | `/calendar` | Create event |
+| `GET` | `/drive` | Search files |
+| `GET` | `/drive/{id}` | Download file |
 
 ## Docker Support
-
-A `Dockerfile` is provided for containerized deployment.
-
 ```bash
 docker build -t gws-wrap .
-docker run -p 8000:8000 gws-wrap
+docker run -p 8000:8000 -v ~/.config/gws:/root/.config/gws gws-wrap
 ```
-
-## Global Options
-- `-h`, `--help`: Show help for any command.
-- `--json-output`: Most list/search commands support raw JSON output for piping.
+*(Note: Volume mounting is required to share your host's gws authentication)*

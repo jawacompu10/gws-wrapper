@@ -10,38 +10,38 @@ The core design principle is the **Adapter Pattern**. We wrap the complex, low-l
 All interactions with the `gws` CLI go through a single function: `run_gws_command`.
 - **Purpose**: Consistent error handling, JSON parsing, logging, and command construction.
 - **Key Features**: Supports `--params`, `--json` (body), `--output`, and `--dry-run`.
-- **Error Handling**: Captures `subprocess.CalledProcessError` and translates it into meaningful application errors.
+- **Error Handling**: Translates `subprocess.CalledProcessError` into meaningful application errors.
 
 ### 2. Service Adapters (`adapters/*.py`)
 Each service (Mail, Calendar, Drive) has its own adapter that:
-- Maps application logic (e.g., `list_messages`) to specific `gws` commands.
-- Handles multi-step operations (e.g., `list_messages` first gets IDs, then fetches metadata for each ID).
+- Maps application logic to specific `gws` commands.
 - Transforms raw JSON dictionaries from `gws` into structured **Pydantic** models.
 
-### 3. Data Models (`models/*.py`)
-We use **Pydantic V2** to define schemas for all Google Workspace resources.
-- **Benefits**: Type safety, field validation, and consistent serialization (via `model_dump()`).
-- **Config**: Uses `ConfigDict(from_attributes=True)` for easy transformation from raw data.
+### 3. Dual Interfaces: CLI & API
+The project provides two entry points to the same logic:
+- **CLI (Click)**: Located in `cli/*.py`, optimized for human use in the terminal.
+- **API (FastAPI)**: Located in `api/main.py` and `api/routes/*.py`, providing RESTful endpoints.
+- **Shared Logic**: Both interfaces call the same adapter functions, ensuring consistent behavior across all platforms.
 
-### 4. Configuration (`config.py` & `settings.toml`)
+### 4. Data Models (`models/*.py`)
+We use **Pydantic V2** to define schemas for all resources.
+- **Models**: `GmailMessage`, `CalendarEvent`, `DriveFile`.
+- **API Models**: Specialized models in `models/api.py` handle request validation for POST bodies (e.g., `TrashRequest`).
+
+### 5. Configuration (`config.py` & `settings.toml`)
 Powered by **Dynaconf**, the configuration system:
-- Loads defaults from `settings.toml`.
-- Supports environment variable overrides (prefixed with `GWS_`).
-- Allows for `.secrets.toml` (ignored by git) for sensitive settings.
-
-### 5. CLI Layer (`cli/*.py`)
-The user interface is built with **Click**.
-- **Context Settings**: Globally enables `-h` as a shorthand for `--help`.
-- **Separation of Concerns**: The CLI layer is purely for presentation (formatting output, confirmation prompts). All logic lives in the adapters.
+- Loads defaults from `settings.toml` (e.g., `default_count`, `default_days`).
+- Both CLI and API layers respect these defaults.
 
 ## Key Implementation Highlights
 
-- **Gmail Metadata Fetching**: The `mail list` and `mail search` commands fetch the `metadata` format for each message to retrieve common headers (From, Subject, Date) in a way that's much faster than fetching the `full` message body.
-- **Multipart Email Body Parsing**: The `mail get-body` command recursively searches through multipart MIME parts to extract the first available text/plain or text/html body, correctly decoding URL-safe base64 data.
-- **Natural Language Parsing**: Calendar event creation uses the `dateparser` library with `PREFER_DATES_FROM: 'future'`, allowing for intuitive strings like "next Tuesday 10am".
-- **Automatic File Naming**: The `drive download` command first fetches metadata for the given file ID if an output path isn't provided, ensuring the local file name matches the original name on Google Drive.
+- **Archiving Logic**: Archiving is implemented by removing the `INBOX` label via Gmail's `modify` method. Verification confirmed that Gmail treats an email as archived once the `INBOX` label is removed.
+- **Gmail Metadata Fetching**: The `mail list` and `mail search` commands fetch the `metadata` format for each message to retrieve headers (From, Subject, Date) efficiently.
+- **Multipart Email Body Parsing**: The `mail get-body` command recursively searches MIME parts to extract the first available text part, handling URL-safe base64 decoding.
+- **Natural Language Parsing**: Calendar event creation uses `dateparser` to allow intuitive strings like "next Tuesday 10am".
+- **Automatic File Naming**: `drive download` fetches file metadata first if an output path isn't provided.
 
 ## Testing Strategy
-We use **pytest** and **pytest-mock** to ensure reliability.
-- **Mocking**: We never call the real `gws` CLI during tests. Instead, we patch `run_gws_command` to return sample JSON responses.
-- **Coverage**: Tests cover success paths, error handling, and data mapping for all services.
+- **Framework**: **pytest** with **pytest-mock**.
+- **Mocking**: The `run_gws_command` is patched during tests to return mock JSON, allowing the entire suite to run without a real Google account or the `gws` CLI.
+- **Coverage**: Includes unit tests for adapters and integration tests for both CLI and API layers.
