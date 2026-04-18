@@ -27,3 +27,27 @@ def test_search_files_success(mocker):
     _, kwargs = mock_run.call_args
     assert "name contains 'Project'" in kwargs["params"]["q"]
     assert "webViewLink" in kwargs["params"]["fields"]
+
+def test_get_file_info_success(mocker):
+    mock_run = mocker.patch("gws_wrapper.adapters.drive.run_gws_command")
+    mock_run.return_value = {
+        "id": "file123",
+        "name": "Doc.pdf",
+        "mimeType": "application/pdf",
+        "kind": "drive#file"
+    }
+    
+    info = drive.get_file_info("file123")
+    assert info.name == "Doc.pdf"
+    assert info.id == "file123"
+
+def test_download_file_success(mocker):
+    mock_run = mocker.patch("gws_wrapper.adapters.drive.run_gws_command")
+    mock_run.return_value = {} # Success returns empty for binary download usually
+    
+    drive.download_file("file123", "output.pdf")
+    
+    mock_run.assert_called_once()
+    _, kwargs = mock_run.call_args
+    assert kwargs["params"]["alt"] == "media"
+    assert kwargs["output_path"] == "output.pdf"

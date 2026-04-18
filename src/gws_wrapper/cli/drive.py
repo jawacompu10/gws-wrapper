@@ -38,3 +38,22 @@ def search(query, limit, json_output):
     except Exception as e:
         logger.error(f"Failed to search files: {e}")
         raise click.ClickException(str(e))
+
+@drive_group.command(name="download")
+@click.argument("file_id")
+@click.option("--output", "-o", help="Local output path. Defaults to the filename from Drive.")
+def download(file_id, output):
+    """Download a file by ID."""
+    try:
+        if not output:
+            logger.info(f"Fetching metadata for file {file_id} to determine name...")
+            file_info = drive.get_file_info(file_id)
+            output = file_info.name
+            
+        logger.info(f"Downloading file {file_id} to {output}...")
+        drive.download_file(file_id, output)
+        click.echo(f"Successfully downloaded file to: {output}")
+        
+    except Exception as e:
+        logger.error(f"Failed to download file: {e}")
+        raise click.ClickException(str(e))

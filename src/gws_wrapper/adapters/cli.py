@@ -12,6 +12,7 @@ def run_gws_command(
     params: Optional[Dict[str, Any]] = None,
     body: Optional[Dict[str, Any]] = None,
     dry_run: bool = False,
+    output_path: Optional[str] = None,
     ) -> Any:
     """
     Execute a gws CLI command and return the parsed JSON output.
@@ -30,7 +31,11 @@ def run_gws_command(
     if dry_run:
         cmd.append("--dry-run")
 
+    if output_path:
+        cmd.extend(["--output", output_path])
+
     cmd.extend(["--format", "json"])
+
     logger.debug(f"Executing: {' '.join(cmd)}")
 
     try:

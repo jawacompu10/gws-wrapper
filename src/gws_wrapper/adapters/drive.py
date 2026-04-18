@@ -30,3 +30,36 @@ def search_files(query: str, limit: int = 10) -> List[DriveFile]:
             web_view_link=f.get("webViewLink")
         ) for f in files
     ]
+
+def get_file_info(file_id: str) -> DriveFile:
+    """
+    Get metadata for a specific file.
+    """
+    response = run_gws_command(
+        service="drive",
+        resource="files",
+        method="get",
+        params={
+            "fileId": file_id,
+            "fields": "id, name, mimeType, kind, webViewLink"
+        }
+    )
+    return DriveFile(
+        id=response["id"],
+        name=response["name"],
+        mime_type=response["mimeType"],
+        kind=response["kind"],
+        web_view_link=response.get("webViewLink")
+    )
+
+def download_file(file_id: str, output_path: str) -> None:
+    """
+    Download a file from Google Drive.
+    """
+    run_gws_command(
+        service="drive",
+        resource="files",
+        method="get",
+        params={"fileId": file_id, "alt": "media"},
+        output_path=output_path
+    )
