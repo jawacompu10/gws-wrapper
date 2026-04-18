@@ -71,3 +71,22 @@ def test_trash_message_success(mocker):
     args = mock_run.call_args[1]
     assert args["method"] == "trash"
     assert args["params"]["id"] == "msg1"
+
+def test_search_messages_success(mocker):
+    mock_run = mocker.patch("gws_wrapper.adapters.gmail.run_gws_command")
+    mock_run.side_effect = [
+        {"messages": [{"id": "search_res"}]},
+        {
+            "id": "search_res",
+            "snippet": "Search Result",
+            "payload": {"headers": []}
+        }
+    ]
+
+    results = gmail.search_messages(query="from:me", count=1)
+    
+    assert len(results) == 1
+    assert results[0].id == "search_res"
+    # Check if query was passed
+    args = mock_run.call_args_list[0][1]
+    assert args["params"]["q"] == "from:me"
