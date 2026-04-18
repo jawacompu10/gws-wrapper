@@ -73,6 +73,30 @@ uv run gws-wrap drive search "Project Proposal"
 uv run gws-wrap drive download <FILE_ID>
 ```
 
+## API
+
+The project also includes a FastAPI-based REST API that exposes the same functionality.
+
+### Running the API
+```bash
+uv run gws-api
+```
+The API will be available at `http://localhost:8000`.
+
+### Documentation
+Once the API is running, you can access the interactive documentation at:
+- **Swagger UI**: `http://localhost:8000/docs`
+- **ReDoc**: `http://localhost:8000/redoc`
+
+## Docker Support
+
+A `Dockerfile` is provided for containerized deployment.
+
+```bash
+docker build -t gws-wrap .
+docker run -p 8000:8000 gws-wrap
+```
+
 ## Global Options
 - `-h`, `--help`: Show help for any command.
 - `--json-output`: Most list/search commands support raw JSON output for piping.
