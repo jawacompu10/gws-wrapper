@@ -38,7 +38,7 @@ Powered by **Dynaconf**, the configuration system:
 - **Archiving Logic**: Archiving is implemented by removing the `INBOX` label via Gmail's `modify` method. Verification confirmed that Gmail treats an email as archived once the `INBOX` label is removed.
 - **Gmail Metadata Fetching**: The `mail list` and `mail search` commands fetch the `metadata` format for each message to retrieve headers (From, Subject, Date) efficiently.
 - **Multipart Email Body Parsing**: The `mail get-body` command recursively searches MIME parts to extract the first available text part, handling URL-safe base64 decoding.
-- **Natural Language Parsing**: Calendar event creation uses `dateparser` to allow intuitive strings like "next Tuesday 10am".
+- **Natural Language Parsing**: Calendar event creation uses `dateparser` to allow intuitive strings like "Tuesday 10am".
 - **Automatic File Naming**: `drive download` fetches file metadata first if an output path isn't provided.
 
 ## Testing Strategy

@@ -21,11 +21,10 @@ async def list_events(days: Optional[int] = Query(None, description="Number of d
 async def create_event(request: CreateEventRequest):
     try:
         if request.start:
-            start_dt = dateparser.parse(request.start, settings={'PREFER_DATES_FROM': 'future'})
-            if not start_dt:
-                raise HTTPException(status_code=400, detail="Invalid start time format")
-            if start_dt.tzinfo is None:
-                start_dt = start_dt.astimezone()
+            try:
+                start_dt = calendar.parse_start_time(request.start)
+            except ValueError as e:
+                raise HTTPException(status_code=400, detail=str(e))
         else:
             start_dt = datetime.now(timezone.utc)
 

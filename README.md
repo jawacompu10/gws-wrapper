@@ -58,7 +58,7 @@ uv run gws-wrap mail get-body <MESSAGE_ID>
 ### Calendar
 ```bash
 uv run gws-wrap calendar list --days 14
-uv run gws-wrap calendar create "Team Sync" --start "next Monday 10am" --duration 45
+uv run gws-wrap calendar create "Team Sync" --start "Monday 10am" --duration 45
 ```
 
 ### Drive

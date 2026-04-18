@@ -1,7 +1,21 @@
 from datetime import datetime, timedelta, timezone
-from typing import List
+from typing import List, Optional
+import dateparser
 from gws_wrapper.adapters.cli import run_gws_command
 from gws_wrapper.models.calendar import CalendarEvent
+
+def parse_start_time(start_str: str) -> datetime:
+    """
+    Parse a natural language date string into a datetime object.
+    Prefers future dates and ensures timezone info is present.
+    """
+    dt = dateparser.parse(start_str, settings={'PREFER_DATES_FROM': 'future'})
+    if not dt:
+        raise ValueError(f"Could not parse date string: {start_str}")
+    
+    if dt.tzinfo is None:
+        dt = dt.astimezone()
+    return dt
 
 def list_events(days: int) -> List[CalendarEvent]:
     """

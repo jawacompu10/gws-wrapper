@@ -51,21 +51,15 @@ def list_events(days, json_output):
 def create(summary, start, duration, location, description, dry_run):
     """Create a new calendar event."""
     from datetime import datetime, timedelta, timezone
-    import dateparser
     
     # Parse start time
-    if start:
-        start_dt = dateparser.parse(start, settings={'PREFER_DATES_FROM': 'future'})
-        if not start_dt:
-            raise click.BadParameter(f"Could not parse start time: {start}")
-        
-        # Ensure it has timezone info, default to local/UTC if missing
-        if start_dt.tzinfo is None:
-            # dateparser usually returns local time if not specified
-            # but for API we need explicit TZ. Let's assume local then convert to UTC iso
-            start_dt = start_dt.astimezone()
-    else:
-        start_dt = datetime.now(timezone.utc)
+    try:
+        if start:
+            start_dt = calendar.parse_start_time(start)
+        else:
+            start_dt = datetime.now(timezone.utc)
+    except ValueError as e:
+        raise click.BadParameter(str(e))
 
     end_dt = start_dt + timedelta(minutes=duration)
     
