@@ -71,13 +71,14 @@ def delete(message_id, force):
         raise click.ClickException(str(e))
 
 @mail.command(name="trash")
-@click.argument("message_id")
-def trash(message_id):
-    """Move a specific message to the trash."""
-    logger.info(f"Moving message {message_id} to trash...")
+@click.argument("message_ids", nargs=-1, required=True)
+def trash(message_ids):
+    """Move one or more messages to the trash."""
+    logger.info(f"Moving {len(message_ids)} messages to trash...")
     try:
-        gmail.trash_message(message_id)
-        click.echo(f"Successfully moved message {message_id} to trash.")
+        for mid in message_ids:
+            gmail.trash_message(mid)
+            click.echo(f"Successfully moved message {mid} to trash.")
     except Exception as e:
-        logger.error(f"Failed to trash message: {e}")
+        logger.error(f"Failed to trash message(s): {e}")
         raise click.ClickException(str(e))
