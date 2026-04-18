@@ -3,3 +3,6 @@
 
 [mail]
 default_count = 10
+
+[calendar]
+default_days = 7
