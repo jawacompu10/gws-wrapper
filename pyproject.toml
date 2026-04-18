@@ -8,13 +8,16 @@ dependencies = [
     "click>=8.3.2",
     "dateparser>=1.4.0",
     "dynaconf>=3.2.13",
+    "fastapi>=0.136.0",
     "loguru>=0.7.3",
     "pydantic>=2.13.2",
     "python-dateutil>=2.9.0.post0",
+    "uvicorn>=0.44.0",
 ]
 
 [project.scripts]
 gws-wrap = "gws_wrapper.main:cli"
+gws-api = "gws_wrapper.api.main:run"
 
 [build-system]
 requires = ["hatchling"]
