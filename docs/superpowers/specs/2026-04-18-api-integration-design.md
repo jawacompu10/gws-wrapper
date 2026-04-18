@@ -29,7 +29,6 @@ The API will serve as a parallel interface to the existing CLI, both sitting on 
 | **Mail** | `GET` | `/mail` | List/Search messages | `q` (string), `count` (int) |
 | | `GET` | `/mail/{id}` | Get message body | (ID in path) |
 | | `POST` | `/mail/trash` | Bulk move to trash | `{"message_ids": [...]}` |
-| | `DELETE` | `/mail/{id}` | Permanent delete | (ID in path) |
 | **Calendar** | `GET` | `/calendar` | List upcoming events | `days` (int, default: 7) |
 | | `POST` | `/calendar` | Create a new event | `{"summary": "...", "start": "...", "duration": 30, ...}` |
 | **Drive** | `GET` | `/drive` | Search for files | `q` (string), `limit` (int) |

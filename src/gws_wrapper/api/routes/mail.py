@@ -31,11 +31,3 @@ async def trash_messages(request: TrashRequest):
         return {"status": "success", "count": len(request.message_ids)}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
-@router.delete("/{message_id}")
-async def delete_message(message_id: str):
-    try:
-        gmail.delete_message(message_id)
-        return {"status": "success", "message": f"Deleted {message_id}"}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
