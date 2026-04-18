@@ -43,23 +43,27 @@ def list_events(days, json_output):
 
 @calendar_group.command(name="create")
 @click.argument("summary")
-@click.option("--start", help="Start time (ISO 8601 or natural language if gws supports it). Defaults to now.")
+@click.option("--start", help="Start time (e.g., 'tomorrow 10am', 'next Tuesday 3pm'). Defaults to now.")
 @click.option("--duration", type=int, default=30, help="Duration in minutes. Defaults to 30.")
 @click.option("--location", help="Event location.")
 @click.option("--description", help="Event description.")
-def create(summary, start, duration, location, description):
+@click.option("--dry-run", is_flag=True, help="Validate the request without creating the event.")
+def create(summary, start, duration, location, description, dry_run):
     """Create a new calendar event."""
     from datetime import datetime, timedelta, timezone
-    from dateutil import parser
+    import dateparser
     
     # Parse start time
     if start:
-        try:
-            start_dt = parser.parse(start)
-            if start_dt.tzinfo is None:
-                start_dt = start_dt.replace(tzinfo=timezone.utc)
-        except Exception as e:
-            raise click.BadParameter(f"Invalid start time: {e}")
+        start_dt = dateparser.parse(start, settings={'PREFER_DATES_FROM': 'future'})
+        if not start_dt:
+            raise click.BadParameter(f"Could not parse start time: {start}")
+        
+        # Ensure it has timezone info, default to local/UTC if missing
+        if start_dt.tzinfo is None:
+            # dateparser usually returns local time if not specified
+            # but for API we need explicit TZ. Let's assume local then convert to UTC iso
+            start_dt = start_dt.astimezone()
     else:
         start_dt = datetime.now(timezone.utc)
 
@@ -73,9 +77,13 @@ def create(summary, start, duration, location, description):
             start_time=start_dt.isoformat(),
             end_time=end_dt.isoformat(),
             location=location,
-            description=description
+            description=description,
+            dry_run=dry_run
         )
-        click.echo(f"Successfully created event: {event.summary} (ID: {event.id})")
+        if dry_run:
+            click.echo(f"DRY RUN: Event '{event.summary}' would be created.")
+        else:
+            click.echo(f"Successfully created event: {event.summary} (ID: {event.id})")
         click.echo(f"Start: {event.start}")
         click.echo(f"End:   {event.end}")
     except Exception as e:

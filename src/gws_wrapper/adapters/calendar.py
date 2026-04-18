@@ -43,7 +43,7 @@ def list_events(days: int) -> List[CalendarEvent]:
         
     return events
 
-def create_event(summary: str, start_time: str, end_time: str, location: str = None, description: str = None) -> CalendarEvent:
+def create_event(summary: str, start_time: str, end_time: str, location: str = None, description: str = None, dry_run: bool = False) -> CalendarEvent:
     """
     Create a new event in the primary calendar.
     """
@@ -62,8 +62,20 @@ def create_event(summary: str, start_time: str, end_time: str, location: str = N
         resource="events",
         method="insert",
         params={"calendarId": "primary"},
-        body=body
+        body=body,
+        dry_run=dry_run
     )
+    
+    # In dry-run mode, gws might return empty or simplified response
+    if dry_run:
+        return CalendarEvent(
+            id="dry-run-id",
+            summary=summary,
+            start=start_time,
+            end=end_time,
+            location=location,
+            description=description
+        )
     
     start = response.get("start", {}).get("dateTime") or response.get("start", {}).get("date")
     end = response.get("end", {}).get("dateTime") or response.get("end", {}).get("date")
