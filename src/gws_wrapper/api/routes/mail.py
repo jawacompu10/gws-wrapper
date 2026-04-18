@@ -3,12 +3,17 @@ from typing import List, Optional
 from gws_wrapper.adapters import gmail
 from gws_wrapper.models.gmail import GmailMessage
 from gws_wrapper.models.api import TrashRequest
+from gws_wrapper.config import settings
 
 router = APIRouter(prefix="/mail", tags=["mail"])
 
 @router.get("", response_model=List[GmailMessage])
-async def list_or_search_messages(q: Optional[str] = None, count: int = 10):
+async def list_or_search_messages(
+    q: Optional[str] = None, 
+    count: Optional[int] = Query(None, description="Number of messages to retrieve")
+):
     try:
+        count = count or settings.mail.default_count
         if q:
             return gmail.search_messages(q, count)
         return gmail.list_messages(count)
