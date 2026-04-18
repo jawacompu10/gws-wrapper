@@ -18,6 +18,29 @@ def get_message(message_id: str, format: str = "metadata") -> Dict[str, Any]:
         }
     )
 
+def get_message_body(message_id: str) -> str:
+    """
+    Fetch the full body of a message.
+    """
+    details = get_message(message_id, format="full")
+    payload = details.get("payload", {})
+    
+    def extract_body(part):
+        if part.get("body", {}).get("data"):
+            import base64
+            data = part["body"]["data"]
+            # Gmail uses URL-safe base64
+            return base64.urlsafe_b64decode(data).decode("utf-8", errors="replace")
+        
+        if "parts" in part:
+            for subpart in part["parts"]:
+                body = extract_body(subpart)
+                if body:
+                    return body
+        return ""
+
+    return extract_body(payload) or details.get("snippet", "")
+
 def list_messages(count: int) -> List[GmailMessage]:
     """
     Fetch a list of messages with their metadata as Pydantic models.

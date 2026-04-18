@@ -32,3 +32,21 @@ def test_list_messages_success(mocker):
     assert messages[0].snippet == "Hello world"
     
     assert mock_run.call_count == 2
+
+def test_get_message_body_success(mocker):
+    import base64
+    mock_run = mocker.patch("gws_wrapper.adapters.gmail.run_gws_command")
+    
+    # URL-safe base64 of "This is the body"
+    encoded_body = base64.urlsafe_b64encode(b"This is the body").decode("utf-8")
+    
+    mock_run.return_value = {
+        "id": "msg1",
+        "payload": {
+            "body": {"data": encoded_body}
+        }
+    }
+
+    body = gmail.get_message_body("msg1")
+    assert body == "This is the body"
+    mock_run.assert_called_once()

@@ -27,6 +27,7 @@ def list_messages(count, json_output):
         else:
             for msg in messages:
                 click.echo("-" * 40)
+                click.echo(f"ID:      {msg.id}")
                 click.echo(f"From:    {msg.sender or 'N/A'}")
                 click.echo(f"Subject: {msg.subject or 'N/A'}")
                 click.echo(f"Date:    {msg.date or 'N/A'}")
@@ -35,4 +36,18 @@ def list_messages(count, json_output):
             
     except Exception as e:
         logger.error(f"Failed to list messages: {e}")
+        raise click.ClickException(str(e))
+
+@mail.command(name="get-body")
+@click.argument("message_id")
+def get_body(message_id):
+    """Get the full body of a specific message."""
+    logger.info(f"Fetching body for message {message_id}...")
+    try:
+        body = gmail.get_message_body(message_id)
+        click.echo("-" * 40)
+        click.echo(body)
+        click.echo("-" * 40)
+    except Exception as e:
+        logger.error(f"Failed to get message body: {e}")
         raise click.ClickException(str(e))
