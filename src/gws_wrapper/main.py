@@ -1,7 +1,7 @@
 import click
 from gws_wrapper.cli.mail import mail
 
-@click.group()
+@click.group(context_settings=dict(help_option_names=['-h', '--help']))
 def cli():
     """Google Workspace CLI Wrapper."""
     pass
