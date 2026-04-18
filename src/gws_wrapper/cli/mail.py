@@ -11,17 +11,27 @@ def mail():
 
 @mail.command(name="list")
 @click.option("--count", type=int, help="Number of messages to list.")
-def list_messages(count):
-    """List the most recent email messages."""
-    # Use config value if not provided via CLI
+@click.option("--json-output", is_flag=True, help="Output as raw JSON.")
+def list_messages(count, json_output):
+    """List the most recent email messages with metadata."""
     count = count or settings.mail.default_count
     
-    logger.info(f"Fetching {count} messages...")
+    logger.info(f"Fetching {count} messages with metadata...")
     
     try:
         messages = gmail.list_messages(count)
-        # For now, just print the JSON output
-        click.echo(json.dumps(messages, indent=2))
+        
+        if json_output:
+            click.echo(json.dumps(messages, indent=2))
+        else:
+            for msg in messages:
+                click.echo("-" * 40)
+                click.echo(f"From:    {msg.get('from', 'N/A')}")
+                click.echo(f"Subject: {msg.get('subject', 'N/A')}")
+                click.echo(f"Date:    {msg.get('date', 'N/A')}")
+                click.echo(f"Snippet: {msg.get('snippet', 'N/A')}")
+            click.echo("-" * 40)
+            
     except Exception as e:
         logger.error(f"Failed to list messages: {e}")
         raise click.ClickException(str(e))
