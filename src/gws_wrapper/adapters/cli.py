@@ -1,7 +1,8 @@
 import subprocess
 import json
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 from loguru import logger
+
 
 def run_gws_command(
     service: str,
@@ -21,7 +22,7 @@ def run_gws_command(
 
     if params:
         cmd.extend(["--params", json.dumps(params)])
-    
+
     if body:
         cmd.extend(["--json", json.dumps(body)])
 
